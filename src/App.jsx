@@ -185,6 +185,31 @@ function Rezerwacja({ onPowrot }) {
   const [godzina, setGodzina] = useState('')
   const [wyslano, setWyslano] = useState(false)
   const [loading, setLoading] = useState(false)
+  const dni = [
+  '2026-06-04',
+  '2026-06-05',
+  '2026-06-06',
+  '2026-06-07',
+]
+  const dostepneGodziny = [
+  '09:00',
+  '09:30',
+  '10:00',
+  '10:30',
+  '11:00',
+  '11:30',
+  '12:00',
+  '12:30',
+  '13:00',
+  '13:30',
+  '14:00',
+  '14:30',
+  '15:00',
+  '15:30',
+  '16:00',
+  '16:30',
+  '17:00'
+]
 
   const handleRezerwacja = async (e) => {
     e.preventDefault(); setLoading(true)
@@ -221,10 +246,82 @@ function Rezerwacja({ onPowrot }) {
           <input style={s.input} placeholder="Anna Kowalska" value={imie} onChange={e=>setImie(e.target.value)} required />
           <label style={s.label}>Numer telefonu</label>
           <input style={s.input} placeholder="600 123 456" value={telefon} onChange={e=>setTelefon(e.target.value)} required />
-          <label style={s.label}>Data wizyty</label>
-          <input style={s.input} type="date" value={data} onChange={e=>setData(e.target.value)} required />
-          <label style={s.label}>Godzina</label>
-          <input style={s.input} type="time" value={godzina} onChange={e=>setGodzina(e.target.value)} required />
+          <label style={s.label}>Dostępne dni</label>
+
+<div
+  style={{
+    display:'grid',
+    gridTemplateColumns:'1fr 1fr',
+    gap:'8px',
+    marginBottom:'16px'
+  }}
+>
+  {dni.map(d => (
+    <button
+      key={d}
+      type="button"
+      onClick={() => setData(d)}
+      style={{
+        padding:'10px',
+        border: data === d
+          ? '2px solid #16a34a'
+          : '1px solid #e4e4e7',
+        borderRadius:'8px',
+        background: data === d
+          ? '#dcfce7'
+          : '#fff',
+        cursor:'pointer',
+        color:'#18181b',
+        fontWeight:'600'
+      }}
+    >
+      {new Date(d).toLocaleDateString('pl-PL', {
+        day:'2-digit',
+        month:'2-digit'
+      })}
+    </button>
+  ))}
+</div>
+          <label style={s.label}>Dostępne godziny</label>
+
+<div style={{
+  display:'grid',
+  gridTemplateColumns:'1fr 1fr',
+  gap:'8px',
+  marginBottom:'16px'
+}}>
+  {[
+    '09:00',
+    '10:00',
+    '11:00',
+    '12:00',
+    '13:00',
+    '14:00',
+    '15:00',
+    '16:00'
+  ].map(g => (
+    <button
+      key={g}
+      type="button"
+      onClick={() => setGodzina(g)}
+      style={{
+  padding:'10px',
+  border: godzina === g
+    ? '2px solid #16a34a'
+    : '1px solid #e4e4e7',
+  borderRadius:'8px',
+  background: godzina === g
+    ? '#dcfce7'
+    : '#fff',
+  cursor:'pointer',
+  color:'#18181b',
+  fontWeight:'600'
+}}
+    >
+      {g}
+    </button>
+  ))}
+</div>
           <button type="submit" style={s.btnGreen} disabled={loading}>
             {loading ? 'Wysyłanie...' : '📅 Zarezerwuj wizytę'}
           </button>
