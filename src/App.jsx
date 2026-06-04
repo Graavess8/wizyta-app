@@ -48,7 +48,19 @@ export default function App() {
   const handleLogout = async () => {
     await supabase.auth.signOut(); setSesja(null); setWidok('logowanie')
   }
+const zmienStatus = async (id, nowyStatus) => {
+  const { error } = await supabase
+    .from('wizyty')
+    .update({ status: nowyStatus })
+    .eq('id', id)
 
+  if (error) {
+    alert('Błąd: ' + error.message)
+    return
+  }
+
+  pobierzWizyty()
+}
   if (widok === 'rezerwacja') return <Rezerwacja onPowrot={() => setWidok('logowanie')} />
 
   if (widok === 'logowanie') return (
@@ -123,7 +135,41 @@ export default function App() {
                   📅 {new Date(w.data_czas).toLocaleString('pl-PL', {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
                 </div>
               </div>
-              <span style={s.tag(w.status)}>{w.status}</span>
+              <div style={{textAlign:'right'}}>
+  <span style={s.tag(w.status)}>{w.status}</span>
+
+  <div style={{marginTop:'10px', display:'flex', gap:'8px'}}>
+    <button
+      onClick={() => zmienStatus(w.id, 'potwierdzona')}
+      style={{
+        background:'#16a34a',
+        color:'#fff',
+        border:'none',
+        borderRadius:'6px',
+        padding:'6px 10px',
+        cursor:'pointer',
+        fontSize:'12px'
+      }}
+    >
+      ✅
+    </button>
+
+    <button
+      onClick={() => zmienStatus(w.id, 'anulowana')}
+      style={{
+        background:'#dc2626',
+        color:'#fff',
+        border:'none',
+        borderRadius:'6px',
+        padding:'6px 10px',
+        cursor:'pointer',
+        fontSize:'12px'
+      }}
+    >
+      ❌
+    </button>
+  </div>
+</div>
             </div>
           </div>
         ))}
