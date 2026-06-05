@@ -22,15 +22,27 @@ export default function App() {
   const [email, setEmail] = useState('')
   const [haslo, setHaslo] = useState('')
   const [wizyty, setWizyty] = useState([])
+  const [pokazWszystkie, setPokazWszystkie] = useState(false)
   const [widok, setWidok] = useState('logowanie')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSesja(session)
-      if (session) { setWidok('panel'); pobierzWizyty() }
-    })
-  }, [])
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSesja(session)
+
+    if (session) {
+      setWidok('panel')
+      pobierzWizyty()
+    }
+  })
+
+  const interval = setInterval(() => {
+  console.log('ODSWIEZAM')
+  pobierzWizyty()
+}, 10000)
+
+  return () => clearInterval(interval)
+}, [])
 
   const pobierzWizyty = async () => {
     const { data } = await supabase.from('wizyty').select('*').order('data_czas', { ascending: true })
@@ -44,20 +56,24 @@ export default function App() {
     if (error) alert('Błąd logowania: ' + error.message)
     else { setWidok('panel'); pobierzWizyty() }
   }
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut(); setSesja(null); setWidok('logowanie')
-  }
-const zmienStatus = async (id, nowyStatus) => {
+const usunWizyte = async (id) => {
+  if (!confirm('Czy na pewno chcesz usunąć tę wizytę?')) return
   const { error } = await supabase
     .from('wizyty')
-    .update({ status: nowyStatus })
+    .delete()
     .eq('id', id)
 
   if (error) {
     alert('Błąd: ' + error.message)
     return
   }
+
+  pobierzWizyty()
+}
+  const handleLogout = async () => {
+    await supabase.auth.signOut(); setSesja(null); setWidok('logowanie')
+  }
+const zmienStatus = async (id, nowyStatus) => {
 
   pobierzWizyty()
 }
@@ -98,23 +114,42 @@ const zmienStatus = async (id, nowyStatus) => {
 
       <div style={{maxWidth:'720px', margin:'0 auto', padding:'40px 20px'}}>
         {/* Statystyki */}
-        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px', marginBottom:'32px'}}>
-          {[
-            { label:'Wszystkie', value: wizyty.length, icon:'📋' },
-            { label:'Oczekujące', value: wizyty.filter(w=>w.status==='oczekujaca').length, icon:'⏳' },
-            { label:'Potwierdzone', value: wizyty.filter(w=>w.status==='potwierdzona').length, icon:'✅' },
-          ].map(stat => (
-            <div key={stat.label} style={{background:'#fff', borderRadius:'12px', padding:'20px', boxShadow:'0 1px 4px rgba(0,0,0,0.06)', textAlign:'center'}}>
-              <div style={{fontSize:'28px', marginBottom:'4px'}}>{stat.icon}</div>
-              <div style={{fontSize:'28px', fontWeight:'800', color: DARK}}>{stat.value}</div>
-              <div style={{fontSize:'13px', color:'#a1a1aa'}}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
+        
+        <div style={{
+  display:'flex',
+  justifyContent:'center',
+  gap:'10px',
+  marginBottom:'20px'
+}}>
+  <button
+    onClick={() => setPokazWszystkie(false)}
+    style={{
+      padding:'8px 16px',
+      border:'none',
+      borderRadius:'8px',
+      cursor:'pointer',
+      background: !pokazWszystkie ? '#16a34a' : '#e5e7eb',
+      color: !pokazWszystkie ? '#fff' : '#111'
+    }}
+  >
+    📅 Nadchodzące (
+{wizyty.filter(w => new Date(w.data_czas) > new Date()).length})
+  </button>
 
-        <h2 style={{fontSize:'18px', fontWeight:'700', color: DARK, marginBottom:'16px'}}>
-          Nadchodzące rezerwacje
-        </h2>
+  <button
+    onClick={() => setPokazWszystkie(true)}
+    style={{
+      padding:'8px 16px',
+      border:'none',
+      borderRadius:'8px',
+      cursor:'pointer',
+      background: pokazWszystkie ? '#16a34a' : '#e5e7eb',
+      color: pokazWszystkie ? '#fff' : '#111'
+    }}
+  >
+    📋 Wszystkie ({wizyty.length})
+  </button>
+</div>
 
         {wizyty.length === 0 && (
           <div style={{textAlign:'center', padding:'60px 0', color:'#a1a1aa'}}>
@@ -123,7 +158,12 @@ const zmienStatus = async (id, nowyStatus) => {
           </div>
         )}
 
-        {wizyty.map(w => (
+        {wizyty
+  .filter(w =>
+    pokazWszystkie ||
+    new Date(w.data_czas) > new Date()
+  )
+  .map(w => (
           <div key={w.id} style={s.vizCard}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
               <div>
@@ -132,42 +172,35 @@ const zmienStatus = async (id, nowyStatus) => {
                 </div>
                 <div style={{color:'#52525b', fontSize:'14px', marginBottom:'4px'}}>📞 {w.klient_telefon}</div>
                 <div style={{color:'#52525b', fontSize:'14px'}}>
-                  📅 {new Date(w.data_czas).toLocaleString('pl-PL', {weekday:'long', day:'numeric', month:'long', hour:'2-digit', minute:'2-digit'})}
+                  📅 {
+  new Date(w.data_czas).toLocaleDateString('pl-PL', {
+    weekday:'long',
+    day:'numeric',
+    month:'long'
+  })
+}
+ o {w.data_czas.substring(11,16)}
                 </div>
               </div>
               <div style={{textAlign:'right'}}>
-  <span style={s.tag(w.status)}>{w.status}</span>
+  
 
   <div style={{marginTop:'10px', display:'flex', gap:'8px'}}>
-    <button
-      onClick={() => zmienStatus(w.id, 'potwierdzona')}
-      style={{
-        background:'#16a34a',
-        color:'#fff',
-        border:'none',
-        borderRadius:'6px',
-        padding:'6px 10px',
-        cursor:'pointer',
-        fontSize:'12px'
-      }}
-    >
-      ✅
-    </button>
-
-    <button
-      onClick={() => zmienStatus(w.id, 'anulowana')}
-      style={{
-        background:'#dc2626',
-        color:'#fff',
-        border:'none',
-        borderRadius:'6px',
-        padding:'6px 10px',
-        cursor:'pointer',
-        fontSize:'12px'
-      }}
-    >
-      ❌
-    </button>
+   
+   <button
+  onClick={() => usunWizyte(w.id)}
+  style={{
+    background:'#dc2626',
+    color:'#fff',
+    border:'none',
+    borderRadius:'6px',
+    padding:'8px 12px',
+    cursor:'pointer'
+  }}
+>
+  🗑 Usuń
+</button>
+  
   </div>
 </div>
             </div>
@@ -184,7 +217,9 @@ function Rezerwacja({ onPowrot }) {
   const [data, setData] = useState('')
   const [godzina, setGodzina] = useState('')
   const [wyslano, setWyslano] = useState(false)
+  const [szczegolyWizyty, setSzczegolyWizyty] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [zajeteGodziny, setZajeteGodziny] = useState([])
   const dni = [
   '2026-06-04',
   '2026-06-05',
@@ -210,6 +245,26 @@ function Rezerwacja({ onPowrot }) {
   '16:30',
   '17:00'
 ]
+     useEffect(() => {
+  pobierzZajeteGodziny()
+}, [data])
+
+const pobierzZajeteGodziny = async () => {
+  if (!data) return
+
+  console.log("Wybrana data:", data)
+
+  const { data: wizyty } = await supabase
+    .from('wizyty')
+    .select('data_czas')
+
+  const zajete = (wizyty || [])
+    .filter(w => w.data_czas.startsWith(data))
+    .map(w => w.data_czas.substring(11, 16))
+
+  setZajeteGodziny(zajete)
+}
+
 
   const handleRezerwacja = async (e) => {
     e.preventDefault(); setLoading(true)
@@ -218,16 +273,30 @@ function Rezerwacja({ onPowrot }) {
       data_czas: `${data}T${godzina}:00`,
     })
     setLoading(false)
-    if (!error) setWyslano(true)
+    if (!error) {
+  setSzczegolyWizyty({
+    data,
+    godzina
+  })
+
+  setWyslano(true)
+}
     else alert('Błąd: ' + error.message)
   }
 
   if (wyslano) return (
     <div style={{minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f8fafc', fontFamily:'system-ui'}}>
       <div style={{textAlign:'center', padding:'40px'}}>
-        <div style={{fontSize:'72px', marginBottom:'16px'}}>✅</div>
+        <div style={{fontSize:'56px', marginBottom:'24px'}}>✅</div>
         <h2 style={{fontSize:'24px', fontWeight:'800', color:'#18181b', marginBottom:'8px'}}>Rezerwacja przyjęta!</h2>
-        <p style={{color:'#71717a', marginBottom:'32px'}}>Zadzwonimy wkrótce, aby potwierdzić wizytę.</p>
+        <div style={{margin:'20px 0', fontSize:'18px'}}>
+  <div>📅 {szczegolyWizyty?.data}</div>
+
+  <div style={{marginTop:'8px'}}>
+    🕒 {szczegolyWizyty?.godzina}
+  </div>
+</div>
+        <p style={{color:'#71717a', marginBottom:'32px'}}>Dziękujemy za rezerwację. Termin został zapisany w kalendarzu salonu.</p>
         <button onClick={onPowrot} style={{...s.btnGhost, width:'auto', padding:'12px 28px'}}>← Powrót</button>
       </div>
     </div>
@@ -290,16 +359,9 @@ function Rezerwacja({ onPowrot }) {
   gap:'8px',
   marginBottom:'16px'
 }}>
-  {[
-    '09:00',
-    '10:00',
-    '11:00',
-    '12:00',
-    '13:00',
-    '14:00',
-    '15:00',
-    '16:00'
-  ].map(g => (
+{dostepneGodziny
+  .filter(g => !zajeteGodziny.includes(g))
+  .map(g => (
     <button
       key={g}
       type="button"
