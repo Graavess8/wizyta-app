@@ -88,7 +88,7 @@ const zmienStatus = async (id, nowyStatus) => {
         </div>
         <form onSubmit={handleLogin}>
           <label style={s.label}>Email</label>
-          <input style={s.input} type="email" placeholder="elwira@salon.pl" value={email} onChange={e=>setEmail(e.target.value)} required />
+          <input style={s.input} type="email" placeholder="twoj@email.pl" value={email} onChange={e=>setEmail(e.target.value)} required />
           <label style={s.label}>Hasło</label>
           <input style={s.input} type="password" placeholder="••••••••" value={haslo} onChange={e=>setHaslo(e.target.value)} required />
           <button type="submit" style={s.btnGreen} disabled={loading}>
@@ -170,6 +170,9 @@ const zmienStatus = async (id, nowyStatus) => {
                 <div style={{fontWeight:'700', fontSize:'16px', color: DARK, marginBottom:'4px'}}>
                   👤 {w.klient_imie}
                 </div>
+                <div style={{color:'#52525b', fontSize:'14px', marginBottom:'4px'}}>
+                💇 {w.usluga}
+                </div>
                 <div style={{color:'#52525b', fontSize:'14px', marginBottom:'4px'}}>📞 {w.klient_telefon}</div>
                 <div style={{color:'#52525b', fontSize:'14px'}}>
                   📅 {
@@ -179,7 +182,8 @@ const zmienStatus = async (id, nowyStatus) => {
     month:'long'
   })
 }
- o {w.data_czas.substring(11,16)}
+      {' | '}
+{w.data_czas.substring(11,16)}
                 </div>
               </div>
               <div style={{textAlign:'right'}}>
@@ -216,6 +220,8 @@ function Rezerwacja({ onPowrot }) {
   const [telefon, setTelefon] = useState('')
   const [data, setData] = useState('')
   const [godzina, setGodzina] = useState('')
+  const [usluga, setUsluga] = useState('')
+  const [uslugi, setUslugi] = useState([])
   const [wyslano, setWyslano] = useState(false)
   const [szczegolyWizyty, setSzczegolyWizyty] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -249,6 +255,10 @@ function Rezerwacja({ onPowrot }) {
   pobierzZajeteGodziny()
 }, [data])
 
+useEffect(() => {
+  pobierzUslugi()
+}, [])
+
 const pobierzZajeteGodziny = async () => {
   if (!data) return
 
@@ -265,19 +275,32 @@ const pobierzZajeteGodziny = async () => {
   setZajeteGodziny(zajete)
 }
 
+const pobierzUslugi = async () => {
+  const { data, error } = await supabase
+    .from('uslugi')
+    .select('*')
+    .order('nazwa')
+
+  if (!error) {
+    setUslugi(data)
+  }
+}
 
   const handleRezerwacja = async (e) => {
     e.preventDefault(); setLoading(true)
     const { error } = await supabase.from('wizyty').insert({
-      klient_imie: imie, klient_telefon: telefon,
-      data_czas: `${data}T${godzina}:00`,
-    })
+  klient_imie: imie,
+  klient_telefon: telefon,
+  data_czas: `${data}T${godzina}:00`,
+  usluga: usluga
+})
     setLoading(false)
     if (!error) {
   setSzczegolyWizyty({
-    data,
-    godzina
-  })
+  data,
+  godzina,
+  usluga
+})
 
   setWyslano(true)
 }
@@ -289,18 +312,33 @@ const pobierzZajeteGodziny = async () => {
       <div style={{textAlign:'center', padding:'40px'}}>
         <div style={{fontSize:'56px', marginBottom:'24px'}}>✅</div>
         <h2 style={{fontSize:'24px', fontWeight:'800', color:'#18181b', marginBottom:'8px'}}>Rezerwacja przyjęta!</h2>
-        <div style={{margin:'20px 0', fontSize:'18px'}}>
-  <div>📅 {szczegolyWizyty?.data}</div>
+        
+  
 
-  <div style={{marginTop:'8px'}}>
-    🕒 {szczegolyWizyty?.godzina}
-  </div>
+   <div style={{margin:'20px 0', fontSize:'18px'}}>
+  📅 {szczegolyWizyty?.data}
 </div>
-        <p style={{color:'#71717a', marginBottom:'32px'}}>Dziękujemy za rezerwację. Termin został zapisany w kalendarzu salonu.</p>
-        <button onClick={onPowrot} style={{...s.btnGhost, width:'auto', padding:'12px 28px'}}>← Powrót</button>
-      </div>
-    </div>
-  )
+
+<div style={{marginTop:'8px'}}>
+  🕒 {szczegolyWizyty?.godzina}
+</div>
+
+<div style={{marginTop:'8px'}}>
+  💇 {szczegolyWizyty?.usluga}
+</div>
+
+<p style={{color:'#71717a', fontSize:'14px', marginBottom:'30px'}}>
+  Dziękujemy za rezerwację. Do zobaczenia!
+</p>
+<button
+  onClick={onPowrot}
+  style={{...s.btnGhost, width:'auto', padding:'12px 28px'}}
+>
+  ← Powrót
+</button>
+</div>
+</div>
+)
 
   return (
     <div style={{minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f8fafc', padding:'20px', fontFamily:'system-ui'}}>
@@ -315,6 +353,22 @@ const pobierzZajeteGodziny = async () => {
           <input style={s.input} placeholder="Anna Kowalska" value={imie} onChange={e=>setImie(e.target.value)} required />
           <label style={s.label}>Numer telefonu</label>
           <input style={s.input} placeholder="600 123 456" value={telefon} onChange={e=>setTelefon(e.target.value)} required />
+          <label style={s.label}>Usługa</label>
+
+<select
+  style={s.input}
+  value={usluga}
+  onChange={(e) => setUsluga(e.target.value)}
+  required
+>
+  <option value="">Wybierz usługę</option>
+
+{uslugi.map((u) => (
+  <option key={u.id} value={u.nazwa}>
+    {u.nazwa} • {u.czas_minuty} min • {u.cena} zł
+  </option>
+))}
+</select>
           <label style={s.label}>Dostępne dni</label>
 
 <div
