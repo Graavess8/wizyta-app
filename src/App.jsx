@@ -7,7 +7,7 @@ const DARK = '#18181b'
 const s = {
   page: { minHeight:'100vh', fontFamily:"'Segoe UI', system-ui, sans-serif", background:'#f8fafc' },
   card: { background:'#fff', borderRadius:'16px', boxShadow:'0 4px 24px rgba(0,0,0,0.08)', padding:'40px', maxWidth:'420px', margin:'0 auto' },
-  logo: { fontSize:'32px', fontWeight:'800', letterSpacing:'-1px' },
+  logo: { fontSize:'40px', fontWeight:'900', letterSpacing:'-1px' },
   dot: { color: GREEN },
   label: { fontSize:'13px', fontWeight:'600', color:'#52525b', marginBottom:'6px', display:'block' },
   input: { width:'100%', padding:'12px 14px', fontSize:'15px', border:'1.5px solid #e4e4e7', borderRadius:'10px', outline:'none', boxSizing:'border-box', background:'#fff', color:'#18181b', marginBottom:'16px', transition:'border .2s' },
@@ -333,10 +333,10 @@ const pobierzUslugi = async () => {
   Dziękujemy za rezerwację. Do zobaczenia!
 </p>
 <button
-  onClick={onPowrot}
+  onClick={() => window.location.reload()}
   style={{...s.btnGhost, width:'auto', padding:'12px 28px'}}
 >
-  ← Powrót
+  ← Nowa rezerwacja
 </button>
 </div>
 </div>
@@ -373,7 +373,7 @@ const pobierzUslugi = async () => {
 </button>
         <div style={{textAlign:'center', marginBottom:'28px'}}>
           <div style={s.logo}>wizyta<span style={s.dot}>.</span>app</div>
-          <div style={{color:'#71717a', marginTop:'6px', fontSize:'14px'}}>Zarezerwuj swoją wizytę</div>
+          <div style={{color:'#71717a', marginTop:'6px', fontSize:'14px'}}>Umów wizytę online</div>
         </div>
         <form onSubmit={handleRezerwacja}>
           <label style={s.label}>Imię i nazwisko</label>
