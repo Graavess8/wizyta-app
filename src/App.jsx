@@ -23,7 +23,7 @@ export default function App() {
   const [haslo, setHaslo] = useState('')
   const [wizyty, setWizyty] = useState([])
   const [pokazWszystkie, setPokazWszystkie] = useState(false)
-  const [widok, setWidok] = useState('logowanie')
+  const [widok, setWidok] = useState('rezerwacja')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -77,7 +77,8 @@ const zmienStatus = async (id, nowyStatus) => {
 
   pobierzWizyty()
 }
-  if (widok === 'rezerwacja') return <Rezerwacja onPowrot={() => setWidok('logowanie')} />
+  if (widok === 'rezerwacja')
+  return <Rezerwacja onPanel={() => setWidok('logowanie')} />
 
   if (widok === 'logowanie') return (
     <div style={{...s.page, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px'}}>
@@ -215,7 +216,7 @@ const zmienStatus = async (id, nowyStatus) => {
   )
 }
 
-function Rezerwacja({ onPowrot }) {
+function Rezerwacja({ onPanel }) {
   const [imie, setImie] = useState('')
   const [telefon, setTelefon] = useState('')
   const [data, setData] = useState('')
@@ -226,12 +227,13 @@ function Rezerwacja({ onPowrot }) {
   const [szczegolyWizyty, setSzczegolyWizyty] = useState(null)
   const [loading, setLoading] = useState(false)
   const [zajeteGodziny, setZajeteGodziny] = useState([])
-  const dni = [
-  '2026-06-04',
-  '2026-06-05',
-  '2026-06-06',
-  '2026-06-07',
-]
+  
+  const dni = Array.from({ length: 7 }, (_, i) => {
+  const d = new Date()
+  d.setDate(d.getDate() + i)
+
+  return d.toISOString().split('T')[0]
+})
   const dostepneGodziny = [
   '09:00',
   '09:30',
@@ -341,9 +343,34 @@ const pobierzUslugi = async () => {
 )
 
   return (
-    <div style={{minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f8fafc', padding:'20px', fontFamily:'system-ui'}}>
+    <div style={{
+  minHeight:'100vh',
+  position:'relative',
+  display:'flex',
+  alignItems:'center',
+  justifyContent:'center',
+  background:'#f8fafc',
+  padding:'20px',
+  fontFamily:'system-ui'
+}}>
       <div style={s.card}>
-        <button onClick={onPowrot} style={{background:'none', border:'none', color: GREEN, cursor:'pointer', fontSize:'14px', fontWeight:'600', marginBottom:'24px', padding:'0'}}>← Powrót</button>
+        <button
+  onClick={onPanel}
+  style={{
+    position:'absolute',
+    top:'20px',
+    right:'20px',
+    background:'#fff',
+    color:'#18181b',
+    fontWeight:'600',
+    border:'1px solid #e4e4e7',
+    borderRadius:'8px',
+    padding:'8px 12px',
+    cursor:'pointer'
+  }}
+>
+  🔐 Logowanie
+</button>
         <div style={{textAlign:'center', marginBottom:'28px'}}>
           <div style={s.logo}>wizyta<span style={s.dot}>.</span>app</div>
           <div style={{color:'#71717a', marginTop:'6px', fontSize:'14px'}}>Zarezerwuj swoją wizytę</div>
