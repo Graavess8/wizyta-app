@@ -9,8 +9,28 @@ const s = {
   card: { background:'#fff', borderRadius:'16px', boxShadow:'0 4px 24px rgba(0,0,0,0.08)', padding:'40px', maxWidth:'420px', margin:'0 auto' },
   logo: { fontSize:'40px', fontWeight:'900', letterSpacing:'-1px' },
   dot: { color: GREEN },
-  label: { fontSize:'13px', fontWeight:'600', color:'#52525b', marginBottom:'6px', display:'block' },
-  input: { width:'100%', padding:'12px 14px', fontSize:'15px', border:'1.5px solid #e4e4e7', borderRadius:'10px', outline:'none', boxSizing:'border-box', background:'#fff', color:'#18181b', marginBottom:'16px', transition:'border .2s' },
+  label: {
+  fontSize:'13px',
+  fontWeight:'600',
+  color:'#52525b',
+  marginBottom:'6px',
+  display:'block',
+  textAlign:'center'
+},
+
+input: {
+  width:'100%',
+  padding:'12px 14px',
+  fontSize:'15px',
+  border:'1.5px solid #e4e4e7',
+  borderRadius:'10px',
+  outline:'none',
+  boxSizing:'border-box',
+  background:'#fff',
+  color:'#18181b',
+  marginBottom:'16px',
+  transition:'border .2s'
+},
   btnGreen: { width:'100%', padding:'14px', background: GREEN, color:'#fff', fontSize:'16px', fontWeight:'700', border:'none', borderRadius:'12px', cursor:'pointer', letterSpacing:'0.3px' },
   btnGhost: { width:'100%', padding:'12px', background:'transparent', color: GREEN, fontSize:'15px', fontWeight:'600', border:`1.5px solid ${GREEN}`, borderRadius:'12px', cursor:'pointer', marginTop:'10px' },
   tag: (status) => ({ display:'inline-block', padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:'600', background: status==='oczekujaca' ? '#fef9c3' : '#dcfce7', color: status==='oczekujaca' ? '#854d0e' : '#15803d' }),
