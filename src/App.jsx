@@ -105,7 +105,7 @@ const zmienStatus = async (id, nowyStatus) => {
       <div style={s.card}>
         <div style={{textAlign:'center', marginBottom:'32px'}}>
           <div style={s.logo}>wizyta<span style={s.dot}>.</span>app</div>
-          <div style={{color:'#71717a', marginTop:'6px', fontSize:'14px'}}>System rezerwacji dla salonów</div>
+          <div style={{color:'#71717a', marginTop:'6px', fontSize:'14px'}}>System rezerwacji dla Barberów</div>
         </div>
         <form onSubmit={handleLogin}>
           <label style={s.label}>Email</label>
